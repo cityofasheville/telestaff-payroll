@@ -12,3 +12,9 @@ JavaScript Lambda: telestaff-payroll calls Python Lambda: ftp-jobs-py
 Rule: Every 10 minutes 1400 to 2300 (9 or 10 AM to 6 or 7 PM) cron(0/15 14-23 ? * * *)
 
 (Telestaff Import Person has been moved to Bedrock.)
+
+
+## Deploy/Test
+
+/utils/test holds `sam local` testing files
+/utils/layer-deploy and /utils/deploy hold the Terraform files to deploy the Lambda and the Lambda Layer to AWS.

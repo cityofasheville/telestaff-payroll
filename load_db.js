@@ -1,31 +1,15 @@
 const sql = require('mssql')
 
 const load_one_file = require('./load_one_file');
-
-require('dotenv').config({path:'./.env'})   // <============ for local run './.env', for lambda, '/.env/' (or comment whole line)
-
-// Module test
-/////////////////////////////////////////
-// const filelist = [ 'PD-Payroll-Export--T20220304-I000-S1646403358752.csv' ];
-// load_db( filelist )
-// .then(files_to_del => {
-//   console.log('files_to_del',files_to_del);
-// }, function onReject(err) {
-//   console.log(err);
-// });
-/////////////////////////////////////////
+const getConnection = require('./getConnection');
 
 async function load_db(filelist) {
-  await load_old_and_new(filelist, '10.20.1.17'); // 'coa-munis19-ma.asheville.local');    // <<<<<<=========!!!!!!!!!!!!!!!
-  await load_old_and_new(filelist, '10.20.1.29'); // 'coa-munis21-ma.asheville.local');    // <<<<<<=========!!!!!!!!!!!!!!!
-}                                                         // <<<<<<=========!!!!!!!!!!!!!!!
-
-async function load_old_and_new(filelist, serverName) {   // <<<<<<=========!!!!!!!!!!!!!!!
+  const db_connection = await getConnection('munis/munprod/fme_jobs');
   const dbConfig = {
-    user: process.env.sql_user,
-    password: process.env.sql_pw,
-    database: process.env.sql_db,
-    server: serverName, // process.env.sql_host,  // <<<<<<=========!!!!!!!!!!!!!!!
+    user: db_connection.username,
+    password: db_connection.password,
+    database: db_connection.database,
+    server: db_connection.host,
     connectionTimeout: 90000,
     requestTimeout: 90000,
     pool: {
@@ -37,7 +21,10 @@ async function load_old_and_new(filelist, serverName) {   // <<<<<<=========!!!!
       encrypt: true, // for azure
       trustServerCertificate: true // change to true for local dev / self-signed certs
     }
-  }  
+  }
+  if (db_connection.domain) {
+    dbConfig.domain = db_connection.domain;
+  }
   // process.stdout.write(JSON.stringify(dbConfig,null,2));
   const depts =
   {

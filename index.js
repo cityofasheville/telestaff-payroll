@@ -43,8 +43,8 @@ async function ftp_get(lambda_params) {
         console.log("Get All and Delete FTP: ", results_obj)
 
         let filenameList = results_obj.body
-            .filter(filenm => filenm !== "payroll-report-export.csv") // We used to send reports that we had to remove with this filter
-            .filter(filenm => filenm !== "APD-daily-payroll-export.csv"); // obsolete, but leqaving here is case needed again.
+            // .filter(filenm => filenm !== "payroll-report-export.csv") // We used to send reports that we had to remove with this filter
+            // .filter(filenm => filenm !== "APD-daily-payroll-export.csv"); // obsolete, but leaving here is case needed again.
 
         if (filenameList.length > 0) {
             await load_db(filenameList);

@@ -41,7 +41,17 @@ resource "aws_iam_role_policy_attachment" "lambda_s3_access-telestaff" {
 }
 
 
-# 
+# Secrets Manager
+resource "aws_iam_policy" "secrets_manager_policy-telestaff" {
+  name        = "secrets_manager_policy-telestaff"
+  description = "Read secrets"
+  policy = templatefile("./policy_secrets_manager.json",{})
+}
+resource "aws_iam_role_policy_attachment" "secrets_manager" {
+    role        = aws_iam_role.telestaff-role.name
+    policy_arn  = aws_iam_policy.secrets_manager_policy-telestaff.arn
+}
+
 
 output "telestaff_role_arn" {
   value = "${aws_iam_role.telestaff-role.arn}"
