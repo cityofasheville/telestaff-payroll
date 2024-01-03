@@ -6,6 +6,7 @@ const csv = require('csv');
 const { parse, add } = require('date-fns');
 const util = require('util')
 const pipeline = util.promisify(stream.pipeline)
+const clean_unescaped_quotes = require('./clean_unescaped_quotes');
 
 async function load_one_file(sql, filenm, tablenm) {
   try {
@@ -48,6 +49,7 @@ async function load_one_file(sql, filenm, tablenm) {
     // Pipe file downloaded from S3 to DB
     await pipeline(
         s3_stream,
+        clean_unescaped_quotes, // doubles unescaped quotes
         csv.parse({  // parse csv into object of strings
           bom: true,
           columns: true,
