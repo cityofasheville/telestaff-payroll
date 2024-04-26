@@ -1,5 +1,5 @@
-const fs = require('fs');
-const { Transform } = require('node:stream');
+import fs from 'fs';
+import { Transform } from 'node:stream';
 
 // This function doubles unescaped quotes in a csv file
 // It can't solve every problem, for example text fields with embedded '","' or '|@|' but those should be rare.
@@ -29,7 +29,7 @@ const clean_unescaped_quotes = new Transform({
   }
 });
 
-module.exports = clean_unescaped_quotes;
+export default clean_unescaped_quotes;
 
 //
 // TEST/USAGE

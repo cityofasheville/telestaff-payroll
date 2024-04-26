@@ -1,7 +1,9 @@
-const sql = require('mssql')
 
-const load_one_file = require('./load_one_file');
-const getConnection = require('./getConnection');
+import sql from 'mssql';
+const { connect, close } = sql;
+
+import load_one_file from './load_one_file.js';
+import getConnection from './getConnection.js';
 
 async function load_db(filelist) {
   const db_connection = await getConnection('munis/munprod/fme_jobs');
@@ -40,7 +42,7 @@ async function load_db(filelist) {
       }
   }
   try {
-    await sql.connect(dbConfig)
+    await connect(dbConfig)
     // categorize files as PD or FD
     filelist.map((filenm) => {
         if (filenm.charAt(0) === "P") {        // Police
@@ -58,7 +60,7 @@ async function load_db(filelist) {
     };
     let dfil = await deptarr.reduce(call_load_a_dept, Promise.resolve())
 
-    sql.close()
+    close()
     return filelist
   }
   catch (err) {
@@ -115,4 +117,4 @@ async function run_stored_proc(sql, sproc){
   }
 }
 
-module.exports = load_db;
+export default load_db;

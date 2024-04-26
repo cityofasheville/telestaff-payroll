@@ -10,5 +10,10 @@ variable "subnet_ids" {
 
 variable "security_group_ids" {
   type          = list(string)
-  description   = "Array of security_group_ids"
+  description   = "Array of security_group_ids" 
+}
+
+variable "prog_name" {
+  type          = string
+  description   = "Name of Program"
 }

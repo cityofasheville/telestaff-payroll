@@ -1,7 +1,4 @@
-const {
-  SecretsManagerClient,
-  GetSecretValueCommand,
-} = require('@aws-sdk/client-secrets-manager');
+import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 
 const region = 'us-east-1';
 
@@ -10,7 +7,7 @@ async function getConnection(secretName) {
     region,
   });
 
-  response = await client.send(
+  const response = await client.send(
     new GetSecretValueCommand({
       SecretId: secretName,
     })
@@ -20,4 +17,4 @@ async function getConnection(secretName) {
   return (JSON.parse(secret));
 }
 
-module.exports = getConnection;
+export default getConnection;

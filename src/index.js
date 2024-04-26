@@ -1,13 +1,11 @@
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3")
-const { InvokeCommand, LambdaClient } = require("@aws-sdk/client-lambda");
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { InvokeCommand, LambdaClient } from "@aws-sdk/client-lambda";
 const s3_client = new S3Client({ region: "us-east-1" });
 const lambda_client = new LambdaClient({ region: "us-east-1" });
+import load_db from './load_db.js';
 
-const load_db = require('./load_db');
-
-exports.handler = async event => {
-    // async function handler(event){    
-    lambda_params = {
+export async function handler(event) {
+    const lambda_params = {
         FunctionName: 'arn:aws:lambda:us-east-1:518970837364:function:ftp-jobs-py', // This Lambda puts files on S3
         InvocationType: 'RequestResponse',
         LogType: 'None',
@@ -26,7 +24,6 @@ exports.handler = async event => {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 async function ftp_get(lambda_params) {
-    file_downloaded_list = []
     try {
         lambda_params.Payload = JSON.stringify(lambda_params.GetAll_Payload)
 
@@ -43,8 +40,8 @@ async function ftp_get(lambda_params) {
         console.log("Get All and Delete FTP: ", results_obj)
 
         let filenameList = results_obj.body
-            // .filter(filenm => filenm !== "payroll-report-export.csv") // We used to send reports that we had to remove with this filter
-            // .filter(filenm => filenm !== "APD-daily-payroll-export.csv"); // obsolete, but leaving here is case needed again.
+            // .filter(filenm => filenm !== "payroll-report-export.csv")      // We used to send reports that we had to remove with this filter.
+            // .filter(filenm => filenm !== "APD-daily-payroll-export.csv");  // Obsolete, but leaving here is case needed again.
 
         if (filenameList.length > 0) {
             await load_db(filenameList);

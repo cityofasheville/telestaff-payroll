@@ -1,8 +1,10 @@
-.terraform*
+
 node_modules/
-.env
-*.zip
 .DS_Store
 *NOGITHUB*
-nodejs/
 
+# deploy dirs
+build/
+
+# environment files
+.env

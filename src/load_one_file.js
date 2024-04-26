@@ -1,12 +1,14 @@
 
-const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3')
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 const s3_client = new S3Client({ region: 'us-east-1' })
-const stream = require('stream');
-const csv = require('csv');
-const { parse, add } = require('date-fns');
-const util = require('util')
-const pipeline = util.promisify(stream.pipeline)
-const clean_unescaped_quotes = require('./clean_unescaped_quotes');
+import { pipeline as _pipeline, Writable } from 'stream';
+import csvpkg from 'csv';
+const { parse: _parse, transform } = csvpkg;
+
+import { parse, add } from 'date-fns';
+import { promisify } from 'util';
+const pipeline = promisify(_pipeline);
+import clean_unescaped_quotes from './clean_unescaped_quotes.js';
 
 async function load_one_file(sql, filenm, tablenm) {
   try {
@@ -29,7 +31,7 @@ async function load_one_file(sql, filenm, tablenm) {
     table.columns.add('date_time_to', sql.DateTimeOffset, { nullable: true });
 
     // Set up writable to pipe to DB
-    const writableDB = new stream.Writable({
+    const writableDB = new Writable({
       objectMode: true,
       write: (data, _, done) => {
         table.rows.add(...data)
@@ -50,7 +52,7 @@ async function load_one_file(sql, filenm, tablenm) {
     await pipeline(
         s3_stream,
         clean_unescaped_quotes, // doubles unescaped quotes
-        csv.parse({  // parse csv into object of strings
+        _parse({  // parse csv into object of strings
           bom: true,
           columns: true,
           cast: function (value, context) {
@@ -63,7 +65,7 @@ async function load_one_file(sql, filenm, tablenm) {
             }
           }
         }),
-        csv.transform(function (data) { // choose and rename columns : correct data types
+        transform(function (data) { // choose and rename columns : correct data types
           return {
             source: 'Telestaff',
             group: data.institutionAbbreviation.substr(0, 32),
@@ -76,7 +78,7 @@ async function load_one_file(sql, filenm, tablenm) {
             date_time_to: parse(data.through, "yyyy-MM-dd kk:mm:ss", new Date())
           }
         }),
-        csv.transform(function (data, callback) { //reject bad data
+        transform(function (data, callback) { //reject bad data
           if (
             typeof (data.source) === "string" &&
             typeof (data.group) === "string" &&
@@ -119,4 +121,4 @@ async function load_one_file(sql, filenm, tablenm) {
   }
 }
 
-module.exports = load_one_file
+export default load_one_file
