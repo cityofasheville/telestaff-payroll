@@ -6,7 +6,7 @@ import load_db from './load_db.js';
 
 export async function handler(event) {
     const lambda_params = {
-        FunctionName: 'arn:aws:lambda:us-east-1:518970837364:function:ftp-jobs-py', // This Lambda puts files on S3
+        FunctionName: 'arn:aws:lambda:us-east-1:518970837364:function:telestaff-payroll-ftp', // This Lambda puts files on S3
         InvocationType: 'RequestResponse',
         LogType: 'None',
         GetAll_Payload: {
