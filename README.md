@@ -16,9 +16,14 @@ We poll for new Payroll every 10 minutes; runs whenever they post to FTP.
 Rule: Every 10 minutes 1400 to 2300 (9 or 10 AM to 6 or 7 PM) cron(02,12,22,32,42,52 12-18 ? * MON-FRI *)
 
 ### Commands in each subdir
-- Deploy: npm run deploy
+- Test Locally: npm start
+- Deploy: 
+  - npm run deploy prod
+  - npm run deploy dev
+- Destroy: (removes all objects from AWS)
+  - npm run destroy prod
+  - npm run destroy dev 
 - Clean: npm run clean (removes local temp files)
-- Destroy: npm run destroy (removes all objects from AWS)
 
 ### Prerequisites
 Nodejs
