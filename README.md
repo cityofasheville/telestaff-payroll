@@ -16,14 +16,21 @@ We poll for new Payroll every 10 minutes; runs whenever they post to FTP.
 Rule: Every 10 minutes 1400 to 2300 (9 or 10 AM to 6 or 7 PM) cron(02,12,22,32,42,52 12-18 ? * MON-FRI *)
 
 ### Commands in each subdir
-- Test Locally: npm start
+First run ```npm install```
+
+```package.json``` has these scripts:
+- Test Locally: 
+  - ```npm start``` (or for a Python program: ```npm run startpy```)
 - Deploy: 
-  - npm run deploy prod
-  - npm run deploy dev
+  - ```npm run deploy```
 - Destroy: (removes all objects from AWS)
-  - npm run destroy prod
-  - npm run destroy dev 
-- Clean: npm run clean (removes local temp files)
+  - ```npm run destroy```
+- Clean: 
+  - ```npm run clean``` (removes local temp files)
+
+The Deploy/Destroy commands use the name of the active GitHub branch when creating AWS resources.
+For example, if the active GitHub branch is "feature" and the name of the resource is "template", the resource is named "template_feature". For API gateway domains, it's "feature-template.ashevillenc.gov". Production (or main) branches do not get a prefix/suffix.
+
 
 ### Prerequisites
 Nodejs
