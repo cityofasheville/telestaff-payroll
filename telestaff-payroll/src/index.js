@@ -12,9 +12,9 @@ export async function handler(event) {
         GetAll_Payload: {
             "action": "getall",
             "s3_connection": "s3_data_files",
-            "s3_path": "telestaff-payroll-export/",
-            "ftp_connection": "telestaff_ftp",
-            "ftp_path": "/PROD/export/payroll/"
+            "s3_path": "telestaff-saas-payroll-export/",
+            "ftp_connection": "telestaff_saas_uat_ftp",
+            "ftp_path": "/integration/export/payroll/"
         },
     }
 
