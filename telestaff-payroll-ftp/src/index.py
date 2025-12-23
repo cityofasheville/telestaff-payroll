@@ -2,6 +2,7 @@ import paramiko
 import boto3
 import json
 import io
+import pgpy
 
 WORKINGDIR = '/tmp/'
 region_name = "us-east-1"
@@ -58,6 +59,26 @@ def upload_s3(s3, s3_bucket, s3_path, filename):
         print ('File loaded to S3: ' + filename)
     except BaseException as err:
         raise Exception("Upload S3 Error: " + str(err))
+    
+def decrypt(private_key, passphrase, filename):
+    try:
+        encrypted_filepath = WORKINGDIR + filename
+        encrypted_message = pgpy.PGPMessage.from_file(encrypted_filepath)
+        priv_key, _ = pgpy.PGPKey.from_blob(private_key)
+
+        with priv_key.unlock(passphrase):
+            decrypted_message = priv_key.decrypt(encrypted_message)
+        
+        decrypted_bytes = decrypted_message.message
+        final_filename = filename.replace('.pgp', '')
+
+        with open(WORKINGDIR + final_filename, "wb") as f:
+            f.write(decrypted_bytes)
+
+        print("File decrypted: " + final_filename)
+        return final_filename
+    except BaseException as err:
+        raise Exception("Decrypt Error: " + str(err))
 
 def getConnection(secret_name):
     try:
@@ -116,15 +137,20 @@ def handler(event, context):
             filelikeobj = io.StringIO(ftp_keyfile)
             pk = paramiko.RSAKey.from_private_key(filelikeobj)
             sftp = connectToFTP(ftp_host, ftp_port, ftp_user, ftp_pw=None, ftp_keyfile=pk)
-       
+        ftp_pgp_key = ftp_conn['pgp_private_key']
+        ftp_pgp_passphrase = ftp_conn['pgp_passphrase']
 
         if event['action'] == "getall":
             filelist = list_ftp(sftp, event['ftp_path'])
+            decrypted_filelist = []
             for filenm in filelist:
                 get_ftp(sftp, event['ftp_path'], filenm)
                 upload_s3(s3, s3_bucket, event['s3_path'], filenm)
+                decrypted_file = decrypt(ftp_pgp_key, ftp_pgp_passphrase, filenm)
+                upload_s3(s3, s3_bucket, event['s3_path'], decrypted_file)
                 del_ftp(sftp, event['ftp_path'], filenm)
-            retmsg = filelist
+                decrypted_filelist.append(decrypted_file)
+            retmsg = decrypted_filelist
         if event['action'] == "put":
             download_s3(s3, s3_bucket, event['s3_path'], event['filename'])
             put_ftp(sftp, event['ftp_path'], event['filename'])
