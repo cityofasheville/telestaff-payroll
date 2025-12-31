@@ -1,6 +1,4 @@
-
 import sql from 'mssql';
-const { connect, close } = sql;
 
 import load_one_file from './load_one_file.js';
 import getConnection from './getConnection.js';
@@ -42,7 +40,7 @@ async function load_db(filelist) {
       }
   }
   try {
-    await connect(dbConfig)
+    const pool = await new sql.ConnectionPool(dbConfig).connect();
     // categorize files as PD or FD
     filelist.map((filenm) => {
         if (filenm.charAt(0) === "P") {        // Police
@@ -56,11 +54,11 @@ async function load_db(filelist) {
     // Load each of FD/PD: using reduce to call async func sequentially
     const call_load_a_dept = async (previous, dept) => {
         await previous;
-        return load_a_dept(sql,dept);
+        return load_a_dept(pool, dept);
     };
     let dfil = await deptarr.reduce(call_load_a_dept, Promise.resolve())
 
-    close()
+    await pool.close();
     return filelist
   }
   catch (err) {
@@ -69,20 +67,20 @@ async function load_db(filelist) {
   }
 }
 
-async function load_a_dept(sql, dept) { // for each of FD/PD, clear table, load all files, run sp
+async function load_a_dept(pool, dept) { // for each of FD/PD, clear table, load all files, run sp
   try {
     if(dept.files.length == 0) return
 
-    await clear_table(sql, dept.tablenm);
+    await clear_table(pool, dept.tablenm);
 
     // Load each file: using reduce to call async func sequentially
     const call_load_one_file = async (previous, deptfilenm) => {
         await previous;
-        return load_one_file(sql, deptfilenm, dept.tablenm);
+        return load_one_file(pool, deptfilenm, dept.tablenm);
     };
     let deptfiles = await dept.files.reduce(call_load_one_file, Promise.resolve())
 
-    await run_stored_proc(sql, dept.sproc);
+    await run_stored_proc(pool, dept.sproc);
     
     return
   }
@@ -97,9 +95,9 @@ async function load_a_dept(sql, dept) { // for each of FD/PD, clear table, load 
 //   return filenm
 // }
 
-async function clear_table(sql, tablenm){
+async function clear_table(pool, tablenm){
   try{
-    const result = await sql.query("delete from " + tablenm)
+    const result = await pool.request().query("delete from " + tablenm)
 
     console.log("Clear table ",tablenm, "Result: ", result.rowsAffected)
   } catch (err){
@@ -107,9 +105,9 @@ async function clear_table(sql, tablenm){
   }
 }
 
-async function run_stored_proc(sql, sproc){
+async function run_stored_proc(pool, sproc){
   try{
-    const result = await sql.query("execute " + sproc)
+    const result = await pool.request().query("execute " + sproc)
 
     console.log("Stored Procedure ", sproc, "Result: ", result.rowsAffected);
   } catch (err){
