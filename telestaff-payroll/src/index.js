@@ -13,7 +13,7 @@ export async function handler(event) {
             "action": "getall",
             "s3_connection": "s3_data_files",
             "s3_path": "telestaff-saas-payroll-export/",
-            "ftp_connection": "telestaff_saas_uat_ftp",
+            "ftp_connection": "telestaff_saas_prod_ftp",
             "ftp_path": "/integration/export/payroll/"
         },
     }
