@@ -4,7 +4,7 @@
   "description": "Sends and receives files to Kronos Telestaff.",
   "type": "module",
   "scripts": {
-    "start": "cd test; sam local invoke --event sam_event.json",
+    "start": "node src/local.js",
     "clean": "rm -rf deploy/build && rm -rf node_modules/",
     "deploy": "cd deploy && node deploy.js",
     "destroy": "cd deploy && node destroy.js"
@@ -18,7 +18,7 @@
     "@aws-sdk/client-secrets-manager": "^3.409.0",
     "csv": "^5.3.1",
     "date-fns": "^2.12.0",
-    "mssql": "^10.0.1"
+    "mssql": "^12.2.0"
   },
   "devDependencies": {
     "yaml": "^2.4.2"
