@@ -10,25 +10,28 @@ import { promisify } from 'util';
 const pipeline = promisify(_pipeline);
 import clean_unescaped_quotes from './clean_unescaped_quotes.js';
 
+import sql from 'mssql';
+const { Table, Request, VarChar, Int, SmallInt, Date: SqlDate, Float, DateTimeOffset } = sql;
+
 async function load_one_file(sql, filenm, tablenm) {
   try {
 
-    const params = { Bucket: 'bedrock-data-files', Key: 'telestaff-payroll-export/' + filenm }
+    const params = { Bucket: 'bedrock-data-files', Key: 'telestaff-saas-payroll-export/' + filenm }
     const cmd = new GetObjectCommand(params)
     const { Body: s3_stream } = await s3_client.send(cmd)
 
     // Set up database insert
-    const table = new sql.Table(tablenm) // or temporary table, e.g. #temptable
+    const table = new Table(tablenm) // or temporary table, e.g. #temptable
     table.create = false
-    table.columns.add('source', sql.VarChar, { length: 32, nullable: true });
-    table.columns.add('group', sql.VarChar, { length: 32, nullable: true });
-    table.columns.add('emp_id', sql.Int, { nullable: true });
-    table.columns.add('pay_code', sql.SmallInt, { nullable: true });
-    table.columns.add('date_worked', sql.Date, { nullable: true });
-    table.columns.add('hours_worked', sql.Float, { nullable: true });
-    table.columns.add('note', sql.VarChar, { length: 128, nullable: true });
-    table.columns.add('date_time_from', sql.DateTimeOffset, { nullable: true });
-    table.columns.add('date_time_to', sql.DateTimeOffset, { nullable: true });
+    table.columns.add('source', VarChar, { length: 32, nullable: true });
+    table.columns.add('group', VarChar, { length: 32, nullable: true });
+    table.columns.add('emp_id', Int, { nullable: true });
+    table.columns.add('pay_code', SmallInt, { nullable: true });
+    table.columns.add('date_worked', SqlDate, { nullable: true });
+    table.columns.add('hours_worked', Float, { nullable: true });
+    table.columns.add('note', VarChar, { length: 128, nullable: true });
+    table.columns.add('date_time_from', DateTimeOffset, { nullable: true });
+    table.columns.add('date_time_to', DateTimeOffset, { nullable: true });
 
     // Set up writable to pipe to DB
     const writableDB = new Writable({
@@ -38,7 +41,7 @@ async function load_one_file(sql, filenm, tablenm) {
         done()
       },
       final: () => {
-        const request = new sql.Request();
+        const request = new Request(sql);
         request.bulk(table, (err, result) => {
           if (err) console.log("err", err)
           console.log("Load file ", filenm, "to DB: Results: ", result)
