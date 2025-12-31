@@ -48,7 +48,7 @@ resource "aws_lambda_function" "${config.prog_name}" {
   source_code_hash = data.archive_file.${config.prog_name}_zip.output_base64sha256
   layers = [aws_lambda_layer_version.${config.prog_name}_layer.arn]
   timeout          = 900
-  # memory_size      = 256
+  memory_size      = 256
   ${config.vpc_settings}
   tags = {
     Name          = "${config.prog_name}"

@@ -1,15 +1,15 @@
 # Telestaff Payroll FTP
 _(Note: Telestaff Import Person is a Bedrock job.)_
 
-Exports payroll files from Kronos Telestaff SFTP.
+Exports payroll files from UKG Telestaff SaaS SFTP.
 
 Deployed as two Lambdas: 
 - Main program: telestaff-payroll (Nodejs) 
 - FTP Functions: telestaff-payroll-ftp (Python)
 
 Checks FTP site for files.
-If found, Payroll csv file is downloaded from Telestaff and loaded into Munis, using stored procedure.
-Copy of file is stored in S3.
+If found, Payroll csv file is downloaded from Telestaff, decrypted, and loaded into Munis, using stored procedure.
+A copy of the encrypted and decrypted file is stored in S3.
 
 ### Timing 
 We poll for new Payroll every 10 minutes; runs whenever they post to FTP. 
@@ -37,4 +37,3 @@ Nodejs
 Python
 AWS SAM
 Docker (I use Colima)
-Each program needs a file .env, based on .env.example
