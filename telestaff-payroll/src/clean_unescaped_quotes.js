@@ -14,7 +14,7 @@ function clean_unescaped_quotes_row(line) {
 const clean_unescaped_quotes = new Transform({
   transform(chunk, encoding, callback) {
     this.remaining = (this.remaining || '') + chunk.toString();
-    const lines = this.remaining.split(/\r?\n/);
+    const lines = this.remaining.split(/\r\n|\r|\n/);
     this.remaining = lines.pop(); // Save the last incomplete line to be processed with the next chunk
     for (const line of lines) {
       this.push(clean_unescaped_quotes_row(line)+ '\n');
