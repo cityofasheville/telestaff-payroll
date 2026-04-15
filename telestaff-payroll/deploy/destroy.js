@@ -4,7 +4,7 @@ import { execSync } from 'child_process';
 
 try {
   // Running dev or prod?
-  const gitBranch = execSync('git branch --show-current').toString().trim();
+  const gitBranch = execSync('git branch --show-current').toString().trim().split('/').pop();
   
   let deployType = gitBranch;
 
