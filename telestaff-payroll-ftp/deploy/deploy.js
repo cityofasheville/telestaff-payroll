@@ -16,7 +16,7 @@ try {
   const file = await fs.readFile(`${__deploy_dir}/deploy.yaml`, 'utf8');
   let config = YAML.parse(file);
   config.deploy_dir = __deploy_dir;
-  const gitBranch = execSync('git branch --show-current').toString().trim();
+  const gitBranch = execSync('git branch --show-current').toString().trim().split('/').pop();
 
   // get Lambda environment variables from .env file
   try {
@@ -108,20 +108,34 @@ async function setUpFiles(config) {
     await BuildPython(build_dir, config.sam_deploy);
   }
 ///////////////////////////////////
- execSync(`cd ${build_dir} && terraform init && terraform apply -auto-approve`, { stdio: 'inherit' });
+ execSync(`cd ${build_dir} && terraform init && terraform apply`, { stdio: 'inherit' });
 ///////////////////////////////////
 }
 
 async function BuildPython(build_dir, sam_deploy) {
   // FOR PYTHON: Copy files into "python" and "funcdir" subdirectories for zip files
-  await fs.copyFile('../src/requirements.txt', `${build_dir}/requirements.txt`);
+  await fs.copyFile('../pyproject.toml', `${build_dir}/pyproject.toml`);
+  await fs.copyFile('../uv.lock', `${build_dir}/uv.lock`);
+  await fs.copyFile('../.python-version', `${build_dir}/.python-version`);
   await fs.mkdir(`${build_dir}/python`);
   await fs.mkdir(`${build_dir}/python/python`);
   if (sam_deploy === 'true') {
     execSync(`cd ${build_dir}/ && ls && sam build --use-container`);
     await fs.rename(`${build_dir}/.aws-sam/build/program/`, `${build_dir}/python/python/`, { recursive: true });
   } else {
-    execSync(`cd ${build_dir}/ && pip3 install -r requirements.txt --target ./python/python`);
+    // Check if uv is installed
+    try {
+      execSync('which uv', { stdio: 'ignore' });
+    } catch (err) {
+      console.error('\nError: uv is not installed!');
+      console.error('Install it with: brew install uv OR curl -LsSf https://astral.sh/uv/install.sh | sh\n');
+      process.exit(1);
+    }
+    // Export lockfile to requirements.txt, then install for reproducible builds
+    console.log('Exporting uv.lock to requirements.txt...');
+    execSync(`cd ${build_dir}/ && uv export --no-dev --no-hashes -o requirements.txt`, { stdio: 'inherit' });
+    console.log('Installing Python dependencies for ARM64 Lambda with uv...');
+    execSync(`cd ${build_dir}/ && uv pip install -r requirements.txt --target ./python/python --python-platform aarch64-unknown-linux-gnu`, { stdio: 'inherit' });
   }
 }
 
@@ -131,5 +145,5 @@ async function BuildNodeJS(build_dir) {
   await fs.copyFile('../package.json', `${build_dir}/nodejs/package.json`);
   await fs.copyFile('../package-lock.json', `${build_dir}/nodejs/package-lock.json`);
 
-  execSync(`npm install --prefix ${build_dir}/nodejs --omit-dev`, { stdio: 'inherit' });
+  execSync(`npm install --prefix ${build_dir}/nodejs --omit=dev`, { stdio: 'inherit' });
 }
