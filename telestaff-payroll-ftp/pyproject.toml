@@ -1,0 +1,21 @@
+[project]
+name = "telestaff-payroll-ftp"
+version = "1.0.0"
+description = "Telestaff payroll download from FTP server/upload to S3: FTP functions"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "boto3",
+    "paramiko",
+    "pgpy",
+]
+
+[dependency-groups]
+dev = [
+    "pip-audit",
+]
+
+[tool.pip]
+python_version = "3.14"
+
+[tool.uv]
+exclude-newer = "7d"

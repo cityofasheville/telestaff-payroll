@@ -8,6 +8,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      Runtime: python3.12
+      Runtime: python3.14
       Handler: index.handler
       Timeout: 60
