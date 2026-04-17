@@ -49,6 +49,6 @@ async function ftp_get(lambda_params) {
 
     } catch (err) {
         console.log("FTP Error: ", err);
-        throw ("FTP Error: " + err);
+        throw new Error("FTP Error: " + JSON.stringify(err, null, 2));
     }
 }
