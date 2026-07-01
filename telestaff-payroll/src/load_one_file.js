@@ -54,7 +54,7 @@ async function load_one_file(sql, filenm, tablenm) {
     // Pipe file downloaded from S3 to DB
     await pipeline(
         s3_stream,
-        clean_unescaped_quotes, // doubles unescaped quotes
+        clean_unescaped_quotes(), // doubles unescaped quotes
         _parse({  // parse csv into object of strings
           bom: true,
           columns: true,
